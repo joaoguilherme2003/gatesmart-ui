@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
+        <title>GateSmart</title>
+    </head>
+    <script src="https://www.gstatic.com/firebasejs/6.1.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.1.1/firebase-database.js"></script>
+    <script src="./firebase.js"></script>
+    <body>
+        <button onclick="gate_database.open_gate()">Open Gate</button>
+        <script>
+            const gate_database = {
+                new_gate: function () { 
+
+                },
+                open_gate: function () {
+                    var currentDate = new Date();
+
+                    var formattedDate =
+                    currentDate.getFullYear() + '-' +
+                    ('0' + (currentDate.getMonth() + 1)).slice(-2) + '-' +
+                    ('0' + currentDate.getDate()).slice(-2) + ' ' +
+                    ('0' + currentDate.getHours()).slice(-2) + ':' +
+                    ('0' + currentDate.getMinutes()).slice(-2) + ':' +
+                    ('0' + currentDate.getSeconds()).slice(-2);
+
+
+                    firebase.database().ref('Gate').update({
+                        opening: true,
+                        lastTimeOpened: formattedDate
+                    });
+                },
+                get_gate_state: function () {
+                    firebase.database().ref('Gate').on('value', function (snapshot) {
+                        const gateData = snapshot.val();
+                        if (gateData.opening) {
+                            console.log('O portão está sendo aberto.', gateData?.opening, gateData?.lastTimeOpened);
+                        } else {
+                            console.log('O portão está fechado.', gateData?.opening, gateData?.lastTimeOpened);
+                        }
+                    });
+                }
+            }
+            gate_database.get_gate_state();
+        </script>
+    </body>
+</html>
