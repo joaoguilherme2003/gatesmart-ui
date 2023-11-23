@@ -4,17 +4,43 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
         <title>GateSmart</title>
+        <link rel="stylesheet" href="styles.css">
     </head>
     <script src="https://www.gstatic.com/firebasejs/6.1.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/6.1.1/firebase-database.js"></script>
     <script src="./firebase.js"></script>
     <body>
-        <button onclick="gate_database.open_gate()">Open Gate</button>
+        <header>
+            GateSmart
+        </header>
+        <div class="container-general">
+            <div class="gate-info">
+                <button 
+                    onclick="gate_database.open_gate()"
+                    class="open-button"
+                >
+                    Open Gate
+                </button>
+                <div class="infos">
+                    <p id="gateStateInfo"></p>
+                    <p id="lastTimeOpened"></p>
+                </div>
+    
+            </div>
+            <div class="logger">
+                <h3>Logger</h3>
+                <ol id="logList"></ol>
+            </div>
+        </div>
+        
         <script>
-            const gate_database = {
-                new_gate: function () { 
+            const gateStateInfo = document.getElementById('gateStateInfo');
+            const gateLastTimeOpened = document.getElementById('lastTimeOpened');
+            const gateOpenButton = document.querySelector('button');
+            const logList = document.getElementById('logList');
+            let lastState = '';
 
-                },
+            const gate_database = {
                 open_gate: function () {
                     var currentDate = new Date();
 
@@ -28,20 +54,44 @@
 
 
                     firebase.database().ref('Gate').update({
-                        opening: true,
+                        gateState: 'opening',
                         lastTimeOpened: formattedDate
                     });
                 },
                 get_gate_state: function () {
                     firebase.database().ref('Gate').on('value', function (snapshot) {
                         const gateData = snapshot.val();
-                        if (gateData.opening) {
-                            console.log('O portão está sendo aberto.', gateData?.opening, gateData?.lastTimeOpened);
-                        } else {
-                            console.log('O portão está fechado.', gateData?.opening, gateData?.lastTimeOpened);
+                        
+                        if (gateData.gateState === 'opening' && lastState !== 'opening') {
+                            logToConsole('O portão está abrindo.');
+                            gateStateInfo.textContent = 'State: Abrindo';
+                            lastState = 'opening';
+                        } 
+                        else if (gateData.gateState === 'opened' && lastState !== 'opened') {
+                            logToConsole('O portão está aberto.');
+                            gateStateInfo.textContent = 'State: Aberto';
+                            lastState = 'opened';
                         }
+                        else if (gateData.gateState === 'closing' && lastState !== 'closing') {
+                            logToConsole('O portão está fechando.');
+                            gateStateInfo.textContent = 'State: Fechando';
+                            lastState = 'closing';
+                        }
+                        else if (gateData.gateState === 'closed' && lastState !== 'closed') {
+                            logToConsole('O portão está fechado. Última vez aberto: ' + gateData.lastTimeOpened);
+                            gateStateInfo.textContent = 'State: Fechado';
+                            gateLastTimeOpened.textContent = 'Última vez aberto: ' + gateData.lastTimeOpened;
+                            lastState = 'closed';
+                        }
+                        gateOpenButton.disabled = gateData.gateState === 'closed' ? '' : 'disabled';
                     });
                 }
+            }
+            function logToConsole(message) {
+                console.log(message);
+                const logItem = document.createElement('li');
+                logItem.textContent = message;
+                logList.appendChild(logItem);
             }
             gate_database.get_gate_state();
         </script>
