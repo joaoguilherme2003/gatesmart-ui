@@ -1,0 +1,29 @@
+.container-general {
+    display: grid;
+    grid-template-columns: 70% 30%;
+    height: 100vh;
+    margin: 0;
+}
+.gate-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.logger {
+    padding-left: 20px;
+    border-left: solid 1px #333131;
+}
+.open-button {
+    font-size: 26px;
+    padding: 20px;
+}
+.infos {
+    display: flex;
+    gap: 10px;
+}
+header {
+    background-color: black;
+    color: #fff;
+    padding: 10px;
+}
